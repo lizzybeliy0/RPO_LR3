@@ -1,5 +1,18 @@
 # ---- build stage ----
-FROM golang:1.22-alpine AS builder
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /frontend
+
+# Копируем package.json и package-lock.json
+COPY frontend/package*.json ./
+
+# Удаляем package-lock.json и создаем заново
+RUN rm -f package-lock.json && npm install
+
+COPY frontend/ .
+RUN npm run build
+
+FROM golang:1.22-alpine AS backend-builder
 
 WORKDIR /app
 
@@ -8,7 +21,8 @@ RUN go mod tidy
 
 COPY backend/ .
 
-RUN go mod tidy && CGO_ENABLED=0 go build -ldflags="-w -s" -o server ./cmd/server
+#RUN go mod tidy && CGO_ENABLED=0 go build -ldflags="-w -s" -o server ./cmd/server
+RUN CGO_ENABLED=0 go build -ldflags="-w -s" -o server ./cmd/server
 
 # ---- runtime stage ----
 FROM alpine:3.19
@@ -17,9 +31,11 @@ RUN apk add --no-cache ca-certificates bash nginx openssl
 
 WORKDIR /app
 
-COPY --from=builder /app/server /app/server
-COPY --from=builder /app/migrations /app/migrations
-COPY --from=builder /app/docs /app/docs
+COPY --from=backend-builder /app/server /app/server
+COPY --from=backend-builder /app/migrations /app/migrations
+COPY --from=backend-builder /app/docs /app/docs
+
+COPY --from=frontend-builder /frontend/build /usr/share/nginx/html
 
 RUN mkdir -p /etc/nginx/certs && \
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \

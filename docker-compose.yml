@@ -7,9 +7,9 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - transport-data:/app/data
+      - transport-data:/app
     environment:
-      - DB_PATH=/app/data/transport.db
+      - DB_PATH=/app/transport.db
       - PORT=8080
     restart: unless-stopped
 
