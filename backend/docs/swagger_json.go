@@ -82,7 +82,8 @@ var SwaggerJSON = `{
             "properties": {
               "login": {"type": "string", "example": "john_doe", "minLength": 3, "maxLength": 100},
               "password": {"type": "string", "example": "password123", "minLength": 6},
-              "is_admin": {"type": "boolean", "example": false, "default": false}
+              "is_admin": {"type": "boolean", "example": false, "default": false},
+              "card_id": {"type": "integer", "example": 1, "description": "Card ID to assign to user (optional)"}
             }
           }
         }],
@@ -124,7 +125,8 @@ var SwaggerJSON = `{
               "properties": {
                 "login": {"type": "string", "example": "new_login"},
                 "password": {"type": "string", "example": "new_password"},
-                "is_admin": {"type": "boolean", "example": false}
+                "is_admin": {"type": "boolean", "example": false},
+                "card_id": {"type": "integer", "example": 1, "description": "Card ID to assign to user (can be null)"}
               }
             }
           }
@@ -596,6 +598,34 @@ var SwaggerJSON = `{
           "404": {"description": "Key not found"}
         }
       }
+    },
+    "/my/card": {
+      "get": {
+        "tags": ["user"],
+        "summary": "Get current user's card",
+        "description": "Returns the card associated with the authenticated user (non-admin only)",
+        "security": [{"BearerAuth": []}],
+        "responses": {
+          "200": {"description": "OK", "schema": {"$ref": "#/definitions/Card"}},
+          "401": {"description": "Unauthorized"},
+          "403": {"description": "Forbidden - admin should use /cards endpoint"},
+          "404": {"description": "Card not found for this user"}
+        }
+      }
+    },
+    "/my/transactions": {
+      "get": {
+        "tags": ["user"],
+        "summary": "Get current user's transactions",
+        "description": "Returns all transactions for the card associated with the authenticated user (non-admin only)",
+        "security": [{"BearerAuth": []}],
+        "responses": {
+          "200": {"description": "OK", "schema": {"type": "array", "items": {"$ref": "#/definitions/Transaction"}}},
+          "401": {"description": "Unauthorized"},
+          "403": {"description": "Forbidden - admin should use /transactions endpoint"},
+          "404": {"description": "No card found for this user"}
+        }
+      }
     }
   },
   "definitions": {
@@ -604,7 +634,8 @@ var SwaggerJSON = `{
       "properties": {
         "id": {"type": "integer", "example": 1},
         "login": {"type": "string", "example": "admin"},
-        "is_admin": {"type": "boolean", "example": true}
+        "is_admin": {"type": "boolean", "example": true},
+        "card_id": {"type": "integer", "example": 1, "description": "Associated card ID (null for admin)"}
       }
     },
     "Card": {
@@ -617,7 +648,7 @@ var SwaggerJSON = `{
         "owner_name": {"type": "string", "example": "Ivan Ivanov"},
         "key_id": {"type": "integer", "example": 1}
       }
-},
+    },
     "Terminal": {
       "type": "object",
       "properties": {

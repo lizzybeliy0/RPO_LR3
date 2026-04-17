@@ -152,6 +152,19 @@ func (h *Handler) CreateUser(c *gin.Context) {
 		Login:    req.Login,
 		Password: req.Password,
 		IsAdmin:  req.IsAdmin,
+		CardID:   req.CardID,
+	}
+
+	if req.CardID != nil {
+		_, err := h.svc.GetCardByID(*req.CardID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{
+				Error:   "INVALID_CARD_ID",
+				Message: "Card with specified ID does not exist",
+				Status:  http.StatusBadRequest,
+			})
+			return
+		}
 	}
 
 	if err := h.svc.CreateUser(user); err != nil {
@@ -202,11 +215,24 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 		return
 	}
 
+	if req.CardID != nil {
+		_, err := h.svc.GetCardByID(*req.CardID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{
+				Error:   "INVALID_CARD_ID",
+				Message: "Card with specified ID does not exist",
+				Status:  http.StatusBadRequest,
+			})
+			return
+		}
+	}
+
 	user := &models.User{
 		ID:       id,
 		Login:    req.Login,
 		Password: req.Password,
 		IsAdmin:  req.IsAdmin,
+		CardID:   req.CardID,
 	}
 
 	if err := h.svc.UpdateUser(user, isAdmin); err != nil {
@@ -283,6 +309,31 @@ func (h *Handler) GetCard(c *gin.Context) {
 		c.JSON(http.StatusNotFound, models.ErrorResponse{
 			Error:   "CARD_NOT_FOUND",
 			Message: "Card not found",
+			Status:  http.StatusNotFound,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, card)
+}
+
+func (h *Handler) GetMyCard(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	isAdmin := c.GetBool("is_admin")
+
+	if isAdmin {
+		c.JSON(http.StatusForbidden, models.ErrorResponse{
+			Error:   "ACCESS_DENIED",
+			Message: "Use /cards endpoint for admin access",
+			Status:  http.StatusForbidden,
+		})
+		return
+	}
+
+	card, err := h.svc.GetMyCard(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, models.ErrorResponse{
+			Error:   "CARD_NOT_FOUND",
+			Message: err.Error(),
 			Status:  http.StatusNotFound,
 		})
 		return
@@ -433,6 +484,31 @@ func (h *Handler) ListTransactions(c *gin.Context) {
 	txs, err := h.svc.GetAllTransactions()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, txs)
+}
+
+func (h *Handler) GetMyTransactions(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	isAdmin := c.GetBool("is_admin")
+
+	if isAdmin {
+		c.JSON(http.StatusForbidden, models.ErrorResponse{
+			Error:   "ACCESS_DENIED",
+			Message: "Use /transactions endpoint for admin access",
+			Status:  http.StatusForbidden,
+		})
+		return
+	}
+
+	txs, err := h.svc.GetMyTransactions(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, models.ErrorResponse{
+			Error:   "TRANSACTIONS_NOT_FOUND",
+			Message: err.Error(),
+			Status:  http.StatusNotFound,
+		})
 		return
 	}
 	c.JSON(http.StatusOK, txs)

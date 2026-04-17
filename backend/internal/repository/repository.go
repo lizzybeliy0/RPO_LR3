@@ -14,32 +14,47 @@ func NewRepository(db *sql.DB) *Repository {
 }
 
 func (r *Repository) GetUserByLogin(login string) (*models.User, error) {
-	row := r.db.QueryRow("SELECT id, login, password, is_admin FROM users WHERE login = ?", login)
+	row := r.db.QueryRow("SELECT id, login, password, is_admin, card_id FROM users WHERE login = ?", login)
 	var u models.User
 	var isAdmin int
-	err := row.Scan(&u.ID, &u.Login, &u.Password, &isAdmin)
+	var cardID sql.NullInt64
+	err := row.Scan(&u.ID, &u.Login, &u.Password, &isAdmin, &cardID)
 	if err != nil {
 		return nil, err
 	}
 	u.IsAdmin = isAdmin != 0
+	if cardID.Valid {
+		u.CardID = &cardID.Int64
+	}
 	return &u, nil
 }
 
 func (r *Repository) GetUserByID(id int64) (*models.User, error) {
-	row := r.db.QueryRow("SELECT id, login, password, is_admin FROM users WHERE id = ?", id)
+	row := r.db.QueryRow("SELECT id, login, password, is_admin, card_id FROM users WHERE id = ?", id)
 	var u models.User
 	var isAdmin int
-	err := row.Scan(&u.ID, &u.Login, &u.Password, &isAdmin)
+	var cardID sql.NullInt64
+	err := row.Scan(&u.ID, &u.Login, &u.Password, &isAdmin, &cardID)
 	if err != nil {
 		return nil, err
 	}
 	u.IsAdmin = isAdmin != 0
+	if cardID.Valid {
+		u.CardID = &cardID.Int64
+	}
 	return &u, nil
 }
 
 func (r *Repository) CreateUser(u *models.User) error {
-	result, err := r.db.Exec("INSERT INTO users (login, password, is_admin) VALUES (?, ?, ?)",
-		u.Login, u.Password, u.IsAdmin)
+	var cardID interface{}
+	if u.CardID != nil {
+		cardID = *u.CardID
+	} else {
+		cardID = nil
+	}
+
+	result, err := r.db.Exec("INSERT INTO users (login, password, is_admin, card_id) VALUES (?, ?, ?, ?)",
+		u.Login, u.Password, u.IsAdmin, cardID)
 	if err != nil {
 		return err
 	}
@@ -49,8 +64,15 @@ func (r *Repository) CreateUser(u *models.User) error {
 }
 
 func (r *Repository) UpdateUser(u *models.User) error {
-	_, err := r.db.Exec("UPDATE users SET login = ?, password = ?, is_admin = ? WHERE id = ?",
-		u.Login, u.Password, u.IsAdmin, u.ID)
+	var cardID interface{}
+	if u.CardID != nil {
+		cardID = *u.CardID
+	} else {
+		cardID = nil
+	}
+
+	_, err := r.db.Exec("UPDATE users SET login = ?, password = ?, is_admin = ?, card_id = ? WHERE id = ?",
+		u.Login, u.Password, u.IsAdmin, cardID, u.ID)
 	return err
 }
 
@@ -60,7 +82,7 @@ func (r *Repository) DeleteUser(id int64) error {
 }
 
 func (r *Repository) GetAllUsers() ([]models.User, error) {
-	rows, err := r.db.Query("SELECT id, login, password, is_admin FROM users")
+	rows, err := r.db.Query("SELECT id, login, password, is_admin, card_id FROM users")
 	if err != nil {
 		return nil, err
 	}
@@ -70,13 +92,44 @@ func (r *Repository) GetAllUsers() ([]models.User, error) {
 	for rows.Next() {
 		var u models.User
 		var isAdmin int
-		if err := rows.Scan(&u.ID, &u.Login, &u.Password, &isAdmin); err != nil {
+		var cardID sql.NullInt64
+		if err := rows.Scan(&u.ID, &u.Login, &u.Password, &isAdmin, &cardID); err != nil {
 			return nil, err
 		}
 		u.IsAdmin = isAdmin != 0
+		if cardID.Valid {
+			u.CardID = &cardID.Int64
+		}
 		users = append(users, u)
 	}
 	return users, nil
+}
+
+func (r *Repository) GetCardByUserID(userID int64) (*models.Card, error) {
+	var cardID int64
+	err := r.db.QueryRow("SELECT card_id FROM users WHERE id = ? AND card_id IS NOT NULL", userID).Scan(&cardID)
+	if err != nil {
+		return nil, err
+	}
+	return r.GetCardByID(cardID)
+}
+
+func (r *Repository) GetTransactionsByCardID(cardID int64) ([]models.Transaction, error) {
+	rows, err := r.db.Query("SELECT id, amount, card_id, terminal_id, created_at FROM transactions WHERE card_id = ? ORDER BY created_at DESC", cardID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var txs []models.Transaction
+	for rows.Next() {
+		var t models.Transaction
+		if err := rows.Scan(&t.ID, &t.Amount, &t.CardID, &t.TerminalID, &t.CreatedAt); err != nil {
+			return nil, err
+		}
+		txs = append(txs, t)
+	}
+	return txs, nil
 }
 
 func (r *Repository) GetCardByID(id int64) (*models.Card, error) {

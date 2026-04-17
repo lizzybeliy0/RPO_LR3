@@ -3,7 +3,9 @@ CREATE TABLE users (
                        id INTEGER PRIMARY KEY,
                        login TEXT,
                        password TEXT,
-                       is_admin BOOLEAN
+                       is_admin BOOLEAN,
+                       card_id INTEGER NULL,
+                       FOREIGN KEY(card_id) REFERENCES cards(id)
 );
 
 CREATE TABLE keys (

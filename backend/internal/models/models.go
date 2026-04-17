@@ -12,18 +12,21 @@ type User struct {
 	Login    string `json:"login" example:"admin" description:"User login name"`
 	Password string `json:"-" example:"-" description:"User password (never returned)"`
 	IsAdmin  bool   `json:"is_admin" example:"true" description:"Administrator privileges flag"`
+	CardID   *int64 `json:"card_id,omitempty" example:"1" description:"Associated card ID (null for admin)"`
 }
 
 type CreateUserRequest struct {
 	Login    string `json:"login" binding:"required,min=3,max=50" example:"newuser" description:"User login (3-50 characters)"`
 	Password string `json:"password" binding:"required,min=6,max=100" example:"password123" description:"User password (6-100 characters)"`
 	IsAdmin  bool   `json:"is_admin" example:"false" description:"Administrator privileges"`
+	CardID   *int64 `json:"card_id" example:"1" description:"Card ID to assign to user (optional)"`
 }
 
 type UpdateUserRequest struct {
 	Login    string `json:"login" binding:"required,min=3,max=50" example:"updateduser" description:"User login (3-50 characters)"`
 	Password string `json:"password" binding:"omitempty,min=6,max=100" example:"newpassword123" description:"User password (6-100 characters)"`
 	IsAdmin  bool   `json:"is_admin" example:"true" description:"Administrator privileges"`
+	CardID   *int64 `json:"card_id" example:"1" description:"Card ID to assign to user"`
 }
 
 type Card struct {

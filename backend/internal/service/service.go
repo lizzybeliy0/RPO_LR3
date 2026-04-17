@@ -61,6 +61,19 @@ func (s *Service) GetCardByID(id int64) (*models.Card, error) {
 	return s.repo.GetCardByID(id)
 }
 
+func (s *Service) GetMyCard(userID int64) (*models.Card, error) {
+	user, err := s.repo.GetUserByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.CardID == nil {
+		return nil, errors.New("у вас нет привязанной карты")
+	}
+
+	return s.repo.GetCardByID(*user.CardID)
+}
+
 func (s *Service) CreateCard(c *models.Card) error {
 	_, err := s.repo.GetKeyByID(c.KeyID)
 	if err != nil {
@@ -103,6 +116,19 @@ func (s *Service) DeleteTerminal(id int64) error {
 
 func (s *Service) GetAllTransactions() ([]models.Transaction, error) {
 	return s.repo.GetAllTransactions()
+}
+
+func (s *Service) GetMyTransactions(userID int64) ([]models.Transaction, error) {
+	user, err := s.repo.GetUserByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.CardID == nil {
+		return nil, errors.New("у вас нет привязанной карты")
+	}
+
+	return s.repo.GetTransactionsByCardID(*user.CardID)
 }
 
 func (s *Service) CreateTransaction(tx *models.Transaction) error {
