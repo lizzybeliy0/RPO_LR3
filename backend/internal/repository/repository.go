@@ -256,11 +256,11 @@ func (r *Repository) DeleteTerminal(id int64) error {
 func (r *Repository) GetAllTransactions() ([]models.Transaction, error) {
 	rows, err := r.db.Query("SELECT id, amount, card_id, terminal_id, created_at FROM transactions ORDER BY created_at DESC")
 	if err != nil {
-		return nil, err
+		return []models.Transaction{}, nil
 	}
 	defer rows.Close()
 
-	var txs []models.Transaction
+	txs := make([]models.Transaction, 0)
 	for rows.Next() {
 		var t models.Transaction
 		if err := rows.Scan(&t.ID, &t.Amount, &t.CardID, &t.TerminalID, &t.CreatedAt); err != nil {

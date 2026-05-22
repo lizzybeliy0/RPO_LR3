@@ -85,7 +85,12 @@ const Users: React.FC = () => {
             </div>
 
             {loading ? (
-                <div>Загрузка...</div>
+                <div className="loading">Загрузка...</div>
+            ) : filteredUsers.length === 0 ? (
+                <div className="empty-state">
+                    <p>Нет пользователей</p>
+                    <p>Нажмите "+ Добавить пользователя" чтобы создать первого пользователя</p>
+                </div>
             ) : (
                 <table>
                     <thead>

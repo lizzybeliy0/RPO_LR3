@@ -74,7 +74,12 @@ const Terminals: React.FC = () => {
             </div>
 
             {loading ? (
-                <div>Загрузка...</div>
+                <div className="loading">Загрузка...</div>
+            ) : filteredTerminals.length === 0 ? (
+                <div className="empty-state">
+                    <p>Нет терминалов</p>
+                    <p>Нажмите "+ Добавить терминал" чтобы создать первый терминал</p>
+                </div>
             ) : (
                 <table>
                     <thead>

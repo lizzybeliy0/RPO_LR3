@@ -72,7 +72,12 @@ const Cards: React.FC = () => {
             </div>
 
             {loading ? (
-                <div>Загрузка...</div>
+                <div className="loading">Загрузка...</div>
+            ) : filteredCards.length === 0 ? (
+                <div className="empty-state">
+                    <p>Нет карт</p>
+                    <p>Нажмите "+ Добавить карту" чтобы создать первую карту</p>
+                </div>
             ) : (
                 <table>
                     <thead>

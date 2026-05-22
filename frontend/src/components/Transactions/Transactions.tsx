@@ -24,17 +24,26 @@ const Transactions: React.FC<TransactionsProps> = ({ user }) => {
             } else {
                 response = await transactions.getMyTransactions();
             }
-            setTransactionsList(response.data);
+            
+            const data = response?.data;
+            if (Array.isArray(data)) {
+                setTransactionsList(data);
+            } else {
+                setTransactionsList([]); // Если не массив - пустой массив
+            }
         } catch (err) {
             console.error('Error fetching transactions:', err);
+            setTransactionsList([]); // При ошибке - пустой массив
         } finally {
             setLoading(false);
         }
     };
 
+    const safeList = Array.isArray(transactionsList) ? transactionsList : [];
+    
     const filteredTransactions = searchId
-        ? transactionsList.filter(t => t.id === parseInt(searchId))
-        : transactionsList;
+        ? safeList.filter(t => t.id === parseInt(searchId))
+        : safeList;
 
     return (
         <div className="transactions-container">
@@ -50,9 +59,15 @@ const Transactions: React.FC<TransactionsProps> = ({ user }) => {
             </div>
 
             {loading ? (
-                <div>Загрузка...</div>
+                <div className="loading">Загрузка...</div>
+            ) : filteredTransactions.length === 0 ? (
+                <div className="empty-state">
+                    <p>Нет транзакций</p>
+                    {!isAdmin && <p>У вас пока нет ни одной транзакции</p>}
+                    {isAdmin && <p>В системе пока нет ни одной транзакции</p>}
+                </div>
             ) : (
-                <table>
+                <table className="transactions-table">
                     <thead>
                         <tr>
                             <th>ID</th>

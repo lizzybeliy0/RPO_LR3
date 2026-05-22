@@ -74,7 +74,12 @@ const Keys: React.FC = () => {
             </div>
 
             {loading ? (
-                <div>Загрузка...</div>
+                <div className="loading">Загрузка...</div>
+            ) : filteredKeys.length === 0 ? (
+                <div className="empty-state">
+                    <p>🔑 Нет ключей</p>
+                    <p>Нажмите "+ Добавить ключ" чтобы создать первый ключ</p>
+                </div>
             ) : (
                 <table>
                     <thead>
