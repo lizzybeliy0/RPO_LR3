@@ -45,10 +45,9 @@ const App: React.FC = () => {
                 <Header user={user} onLogout={handleLogout} />
                 <main className="main-content">
                     <Routes>
+                        {/* Редирект с корня в зависимости от роли */}
                         <Route path="/" element={
-                            user?.is_admin ? 
-                                <Navigate to="/cards" /> : 
-                                <Navigate to="/my-card" />
+                            <Navigate to={user?.is_admin ? "/cards" : "/my-card"} replace />
                         } />
                         <Route path="/my-card" element={<MyCard />} />
                         <Route path="/cards" element={<Cards />} />
@@ -60,6 +59,8 @@ const App: React.FC = () => {
                                 <Route path="/keys" element={<Keys />} />
                             </>
                         )}
+                        {/* Если путь не найден - редирект на корень */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </main>
             </div>

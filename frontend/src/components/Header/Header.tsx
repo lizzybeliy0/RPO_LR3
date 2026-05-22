@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
 
 interface HeaderProps {
@@ -9,7 +9,13 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const isAdmin = user?.is_admin;
+
+    const handleLogout = () => {
+        onLogout();
+        navigate('/', { replace: true }); // Принудительный редирект на корень
+    };
 
     return (
         <header className="header">
@@ -44,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
             </nav>
             <div className="header-right">
                 <span className="user-name">{user?.login}</span>
-                <button onClick={onLogout} className="logout-btn">Выход</button>
+                <button onClick={handleLogout} className="logout-btn">Выход</button>
             </div>
         </header>
     );
