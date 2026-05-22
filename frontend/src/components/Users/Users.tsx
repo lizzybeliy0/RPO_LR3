@@ -48,13 +48,11 @@ const Users: React.FC = () => {
     };
 
     const handleDelete = async (id: number) => {
-        if (window.confirm('Удалить пользователя?')) {
-            try {
-                await users.delete(id);
-                await fetchUsers();
-            } catch (err) {
-                alert('Ошибка удаления');
-            }
+        try {
+            await users.delete(id);
+            await fetchUsers();
+        } catch (err) {
+            alert('Ошибка удаления');
         }
     };
 

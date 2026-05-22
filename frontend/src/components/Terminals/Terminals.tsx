@@ -31,13 +31,11 @@ const Terminals: React.FC = () => {
     };
 
     const handleDelete = async (id: number) => {
-        if (window.confirm('Удалить терминал?')) {
-            try {
-                await terminals.delete(id);
-                await fetchTerminals();
-            } catch (err) {
-                alert('Ошибка удаления');
-            }
+        try {
+            await terminals.delete(id);
+            await fetchTerminals();
+        } catch (err) {
+            alert('Ошибка удаления');
         }
     };
 

@@ -31,13 +31,11 @@ const Keys: React.FC = () => {
     };
 
     const handleDelete = async (id: number) => {
-        if (window.confirm('Удалить ключ? Это может затронуть связанные карты.')) {
-            try {
-                await keys.delete(id);
-                await fetchKeys();
-            } catch (err) {
-                alert('Ошибка удаления');
-            }
+        try {
+            await keys.delete(id);
+            await fetchKeys();
+        } catch (err) {
+            alert('Ошибка удаления');
         }
     };
 

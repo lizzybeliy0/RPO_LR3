@@ -41,14 +41,11 @@ const Transactions: React.FC<TransactionsProps> = ({ user }) => {
     };
 
     const handleDelete = async (id: number) => {
-        if (!isAdmin) return;
-        if (window.confirm('Удалить транзакцию?')) {
-            try {
-                await transactions.delete(id);
-                await fetchTransactions();
-            } catch (err) {
-                alert('Ошибка удаления');
-            }
+        try {
+            await transactions.delete(id);
+            await fetchTransactions();
+        } catch (err) {
+            alert('Ошибка удаления');
         }
     };
 

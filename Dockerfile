@@ -3,10 +3,8 @@ FROM node:20-alpine AS frontend-builder
 
 WORKDIR /frontend
 
-# Копируем package.json и package-lock.json
 COPY frontend/package*.json ./
 
-# Удаляем package-lock.json и создаем заново
 RUN rm -f package-lock.json && npm install
 
 COPY frontend/ .

@@ -3,16 +3,34 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Фото из public/bus.jpg */
+    background-image: url('/public/bus.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+/* Затемнение фона на 50% */
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* 50% черного для лучшей читаемости */
 }
 
 .login-card {
     background: white;
     padding: 2rem;
     border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     width: 100%;
     max-width: 400px;
+    position: relative;
+    z-index: 1;
 }
 
 .login-title {

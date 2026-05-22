@@ -50,13 +50,11 @@ const Cards: React.FC = () => {
     };
 
     const handleDelete = async (id: number) => {
-        if (window.confirm('Удалить карту?')) {
-            try {
-                await cards.delete(id);
-                await fetchCards();
-            } catch (err) {
-                alert('Ошибка удаления');
-            }
+        try {
+            await cards.delete(id);
+            await fetchCards();
+        } catch (err) {
+            alert('Ошибка удаления');
         }
     };
 
