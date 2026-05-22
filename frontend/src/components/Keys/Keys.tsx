@@ -16,9 +16,15 @@ const Keys: React.FC = () => {
     const fetchKeys = async () => {
         try {
             const response = await keys.getAll();
-            setKeysList(response.data);
+            const data = response?.data;
+            if (Array.isArray(data)) {
+                setKeysList(data);
+            } else {
+                setKeysList([]);
+            }
         } catch (err) {
             console.error('Error fetching keys:', err);
+            setKeysList([]);
         } finally {
             setLoading(false);
         }
@@ -50,9 +56,11 @@ const Keys: React.FC = () => {
         }
     };
 
+    // Защита от null
+    const safeList = Array.isArray(keysList) ? keysList : [];
     const filteredKeys = searchId
-        ? keysList.filter(k => k.id === parseInt(searchId))
-        : keysList;
+        ? safeList.filter(k => k.id === parseInt(searchId))
+        : safeList;
 
     return (
         <div className="keys-container">
@@ -77,11 +85,11 @@ const Keys: React.FC = () => {
                 <div className="loading">Загрузка...</div>
             ) : filteredKeys.length === 0 ? (
                 <div className="empty-state">
-                    <p>🔑 Нет ключей</p>
+                    <p>Нет ключей</p>
                     <p>Нажмите "+ Добавить ключ" чтобы создать первый ключ</p>
                 </div>
             ) : (
-                <table>
+                <table className="keys-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -98,8 +106,8 @@ const Keys: React.FC = () => {
                                     <button onClick={() => {
                                         setEditingKey(key);
                                         setShowModal(true);
-                                    }}>✏️</button>
-                                    <button className="danger" onClick={() => handleDelete(key.id)}>🗑️</button>
+                                    }}>Изменить</button>
+                                    <button className="danger" onClick={() => handleDelete(key.id)}>Удалить</button>
                                 </td>
                             </tr>
                         ))}

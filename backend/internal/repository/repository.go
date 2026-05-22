@@ -84,17 +84,17 @@ func (r *Repository) DeleteUser(id int64) error {
 func (r *Repository) GetAllUsers() ([]models.User, error) {
 	rows, err := r.db.Query("SELECT id, login, password, is_admin, card_id FROM users")
 	if err != nil {
-		return nil, err
+		return []models.User{}, nil
 	}
 	defer rows.Close()
 
-	var users []models.User
+	users := make([]models.User, 0)
 	for rows.Next() {
 		var u models.User
 		var isAdmin int
 		var cardID sql.NullInt64
 		if err := rows.Scan(&u.ID, &u.Login, &u.Password, &isAdmin, &cardID); err != nil {
-			return nil, err
+			return []models.User{}, nil
 		}
 		u.IsAdmin = isAdmin != 0
 		if cardID.Valid {
@@ -117,21 +117,20 @@ func (r *Repository) GetCardByUserID(userID int64) (*models.Card, error) {
 func (r *Repository) GetTransactionsByCardID(cardID int64) ([]models.Transaction, error) {
 	rows, err := r.db.Query("SELECT id, amount, card_id, terminal_id, created_at FROM transactions WHERE card_id = ? ORDER BY created_at DESC", cardID)
 	if err != nil {
-		return nil, err
+		return []models.Transaction{}, nil
 	}
 	defer rows.Close()
 
-	var txs []models.Transaction
+	txs := make([]models.Transaction, 0)
 	for rows.Next() {
 		var t models.Transaction
 		if err := rows.Scan(&t.ID, &t.Amount, &t.CardID, &t.TerminalID, &t.CreatedAt); err != nil {
-			return nil, err
+			return []models.Transaction{}, nil
 		}
 		txs = append(txs, t)
 	}
 	return txs, nil
 }
-
 func (r *Repository) GetCardByID(id int64) (*models.Card, error) {
 	row := r.db.QueryRow("SELECT id, number, balance, blocked, owner_name, key_id FROM cards WHERE id = ?", id)
 	var c models.Card
@@ -159,16 +158,16 @@ func (r *Repository) GetCardByNumber(number string) (*models.Card, error) {
 func (r *Repository) GetAllCards() ([]models.Card, error) {
 	rows, err := r.db.Query("SELECT id, number, balance, blocked, owner_name, key_id FROM cards")
 	if err != nil {
-		return nil, err
+		return []models.Card{}, nil
 	}
 	defer rows.Close()
 
-	var cards []models.Card
+	cards := make([]models.Card, 0)
 	for rows.Next() {
 		var c models.Card
 		var blocked int
 		if err := rows.Scan(&c.ID, &c.Number, &c.Balance, &blocked, &c.OwnerName, &c.KeyID); err != nil {
-			return nil, err
+			return []models.Card{}, nil
 		}
 		c.Blocked = blocked != 0
 		cards = append(cards, c)
@@ -216,15 +215,15 @@ func (r *Repository) GetTerminalByID(id int64) (*models.Terminal, error) {
 func (r *Repository) GetAllTerminals() ([]models.Terminal, error) {
 	rows, err := r.db.Query("SELECT id, serial, address, name FROM terminals")
 	if err != nil {
-		return nil, err
+		return []models.Terminal{}, nil
 	}
 	defer rows.Close()
 
-	var terminals []models.Terminal
+	terminals := make([]models.Terminal, 0)
 	for rows.Next() {
 		var t models.Terminal
 		if err := rows.Scan(&t.ID, &t.Serial, &t.Address, &t.Name); err != nil {
-			return nil, err
+			return []models.Terminal{}, nil
 		}
 		terminals = append(terminals, t)
 	}
@@ -264,7 +263,7 @@ func (r *Repository) GetAllTransactions() ([]models.Transaction, error) {
 	for rows.Next() {
 		var t models.Transaction
 		if err := rows.Scan(&t.ID, &t.Amount, &t.CardID, &t.TerminalID, &t.CreatedAt); err != nil {
-			return nil, err
+			return []models.Transaction{}, nil
 		}
 		txs = append(txs, t)
 	}
@@ -316,15 +315,15 @@ func (r *Repository) GetKeyByID(id int64) (*models.Key, error) {
 func (r *Repository) GetAllKeys() ([]models.Key, error) {
 	rows, err := r.db.Query("SELECT id, data FROM keys")
 	if err != nil {
-		return nil, err
+		return []models.Key{}, nil
 	}
 	defer rows.Close()
 
-	var keys []models.Key
+	keys := make([]models.Key, 0)
 	for rows.Next() {
 		var k models.Key
 		if err := rows.Scan(&k.ID, &k.Data); err != nil {
-			return nil, err
+			return []models.Key{}, nil
 		}
 		keys = append(keys, k)
 	}

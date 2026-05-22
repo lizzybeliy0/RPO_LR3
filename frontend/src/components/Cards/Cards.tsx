@@ -20,9 +20,15 @@ const Cards: React.FC = () => {
     const fetchCards = async () => {
         try {
             const response = await cards.getAll();
-            setCardsList(response.data);
+            const data = response?.data;
+            if (Array.isArray(data)) {
+                setCardsList(data);
+            } else {
+                setCardsList([]);
+            }
         } catch (err) {
             console.error('Error fetching cards:', err);
+            setCardsList([]);
         } finally {
             setLoading(false);
         }
@@ -31,9 +37,15 @@ const Cards: React.FC = () => {
     const fetchKeys = async () => {
         try {
             const response = await keys.getAll();
-            setKeysList(response.data);
+            const data = response?.data;
+            if (Array.isArray(data)) {
+                setKeysList(data);
+            } else {
+                setKeysList([]);
+            }
         } catch (err) {
             console.error('Error fetching keys:', err);
+            setKeysList([]);
         }
     };
 
@@ -48,9 +60,11 @@ const Cards: React.FC = () => {
         }
     };
 
-    const filteredCards = searchId 
-        ? cardsList.filter(c => c.id === parseInt(searchId))
-        : cardsList;
+    // Защита от null
+    const safeList = Array.isArray(cardsList) ? cardsList : [];
+    const filteredCards = searchId
+        ? safeList.filter(c => c.id === parseInt(searchId))
+        : safeList;
 
     return (
         <div className="cards-container">
@@ -104,8 +118,8 @@ const Cards: React.FC = () => {
                                     <button onClick={() => {
                                         setEditingCard(card);
                                         setShowModal(true);
-                                    }}>✏️</button>
-                                    <button className="danger" onClick={() => handleDelete(card.id)}>🗑️</button>
+                                    }}>Изменить</button>
+                                    <button className="danger" onClick={() => handleDelete(card.id)}>Удалить</button>
                                 </td>
                             </tr>
                         ))}

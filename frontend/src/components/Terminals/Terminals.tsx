@@ -16,9 +16,15 @@ const Terminals: React.FC = () => {
     const fetchTerminals = async () => {
         try {
             const response = await terminals.getAll();
-            setTerminalsList(response.data);
+            const data = response?.data;
+            if (Array.isArray(data)) {
+                setTerminalsList(data);
+            } else {
+                setTerminalsList([]);
+            }
         } catch (err) {
             console.error('Error fetching terminals:', err);
+            setTerminalsList([]);
         } finally {
             setLoading(false);
         }
@@ -50,9 +56,11 @@ const Terminals: React.FC = () => {
         }
     };
 
+    // Защита от null
+    const safeList = Array.isArray(terminalsList) ? terminalsList : [];
     const filteredTerminals = searchId
-        ? terminalsList.filter(t => t.id === parseInt(searchId))
-        : terminalsList;
+        ? safeList.filter(t => t.id === parseInt(searchId))
+        : safeList;
 
     return (
         <div className="terminals-container">
@@ -81,7 +89,7 @@ const Terminals: React.FC = () => {
                     <p>Нажмите "+ Добавить терминал" чтобы создать первый терминал</p>
                 </div>
             ) : (
-                <table>
+                <table className="terminals-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -102,8 +110,8 @@ const Terminals: React.FC = () => {
                                     <button onClick={() => {
                                         setEditingTerminal(terminal);
                                         setShowModal(true);
-                                    }}>✏️</button>
-                                    <button className="danger" onClick={() => handleDelete(terminal.id)}>🗑️</button>
+                                    }}>Изменить</button>
+                                    <button className="danger" onClick={() => handleDelete(terminal.id)}>Удалить</button>
                                 </td>
                             </tr>
                         ))}

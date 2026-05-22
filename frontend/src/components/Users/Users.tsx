@@ -18,9 +18,15 @@ const Users: React.FC = () => {
     const fetchUsers = async () => {
         try {
             const response = await users.getAll();
-            setUsersList(response.data);
+            const data = response?.data;
+            if (Array.isArray(data)) {
+                setUsersList(data);
+            } else {
+                setUsersList([]);
+            }
         } catch (err) {
             console.error('Error fetching users:', err);
+            setUsersList([]);
         } finally {
             setLoading(false);
         }
@@ -29,9 +35,15 @@ const Users: React.FC = () => {
     const fetchCards = async () => {
         try {
             const response = await cards.getAll();
-            setCardsList(response.data);
+            const data = response?.data;
+            if (Array.isArray(data)) {
+                setCardsList(data);
+            } else {
+                setCardsList([]);
+            }
         } catch (err) {
             console.error('Error fetching cards:', err);
+            setCardsList([]);
         }
     };
 
@@ -61,9 +73,11 @@ const Users: React.FC = () => {
         }
     };
 
+    // Защита от null
+    const safeList = Array.isArray(usersList) ? usersList : [];
     const filteredUsers = searchId
-        ? usersList.filter(u => u.id === parseInt(searchId))
-        : usersList;
+        ? safeList.filter(u => u.id === parseInt(searchId))
+        : safeList;
 
     return (
         <div className="users-container">
@@ -92,7 +106,7 @@ const Users: React.FC = () => {
                     <p>Нажмите "+ Добавить пользователя" чтобы создать первого пользователя</p>
                 </div>
             ) : (
-                <table>
+                <table className="users-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -113,8 +127,8 @@ const Users: React.FC = () => {
                                     <button onClick={() => {
                                         setEditingUser(user);
                                         setShowModal(true);
-                                    }}>✏️</button>
-                                    <button className="danger" onClick={() => handleDelete(user.id)}>🗑️</button>
+                                    }}>Изменить</button>
+                                    <button className="danger" onClick={() => handleDelete(user.id)}>Удалить</button>
                                 </td>
                             </tr>
                         ))}
